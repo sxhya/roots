@@ -93,4 +93,24 @@ public class Vector{
 
     public static String fmt(double d) {
         if(Math.abs((d - (long) d)) <= 0.00001) return String.format("%d",(long)d); else return String.format("%e",d);}
+    
+    public Matrix getReflection() {
+        int n = myCoo.length;
+        double[][] m = new double[n][n];
+
+        double d = len2(this);
+        if (Math.abs(d) < EPS) throw new IllegalArgumentException("Can not reflect w.r.t. zero vector.");
+
+        d = - 2 / d;
+
+        for (int i=0; i<n; i++) { //column iterator
+            double c = d * myCoo[i];
+            for (int j=0; j<n; j++) { //row iterator
+                m[j][i] = c * myCoo[j];
+                if (i==j) m[j][i] += 1;
+            }
+        }
+
+        return new Matrix(m);
+    }
 }
