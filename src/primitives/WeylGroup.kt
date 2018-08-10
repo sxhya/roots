@@ -5,7 +5,7 @@ import java.util.*
  */
 
 //TODO: I don'like the arguments of the primary constructor...
-class WeylGroup (basis: Matrix, cutoff: Int, noreflection: Int) {//if you want to get full Weyl group and not the Levi Weyl subgroup noreflection should be -1
+class WeylGroup (basis: Matrix, cutoff: Int, noReflection: Int) {//if you want to get full Weyl group and not the Levi Weyl subgroup noReflection should be -1
     val carrier: MutableSet<Matrix> = HashSet()
 
     companion object {
@@ -62,7 +62,7 @@ class WeylGroup (basis: Matrix, cutoff: Int, noreflection: Int) {//if you want t
 
     init {
         for (i in 0 until basis.height())
-            if (i != noreflection)
+            if (i != noReflection)
                 carrier.add(Vector(basis.myCoo[i]).getReflection())
         val iter = 0
         var flag = false

@@ -37,9 +37,9 @@ class BasedRootSystem internal constructor(basis: Array<DoubleArray>) {
         }
         myCorootsBasis = Matrix(coo)
         val n = myCorootsBasis.height()
-        val fw = Array(n, { _ -> Array(n, { _ -> 0.0})})
+        val fw = Array(n) { _ -> Array(n, { _ -> 0.0})}
         for (v in 0 until coo.size) {
-            val rhs = Array(n, { i -> if (i == v) 1.0 else 0.0})
+            val rhs = Array(n) { i -> if (i == v) 1.0 else 0.0}
             fw[v] = myCorootsBasis.solve(Vector(rhs.toDoubleArray())).myCoo.toTypedArray()
         }
         myFundamentalWeights = Matrix(fw.map { it.toDoubleArray() }.toTypedArray())
@@ -125,7 +125,7 @@ class BasedRootSystem internal constructor(basis: Array<DoubleArray>) {
         val coo = simpleRootCoefficients(root)
         val allPos = coo.map { it >= 0 }.fold(true, {a, b -> a && b})
         val allNeg = coo.map { it <= 0 }.fold(true, {a, b -> a && b})
-        val sum = coo.fold(0, {a, b -> a + b})
+        val sum = coo.fold(0) { a, b -> a + b}
         return when {
             allPos -> sum
             allNeg -> -sum
@@ -135,11 +135,11 @@ class BasedRootSystem internal constructor(basis: Array<DoubleArray>) {
 
     companion object {
         private fun roundArray(a: Array<Double>): Array<Int> =
-                Array(a.size, {i ->
+                Array(a.size) { i ->
                     val d = a[i]
                     assert (Math.abs(d - Math.round(d)) < Vector.EPS)
                     Math.round(d).toInt()
-                })
+                }
 
         private fun sqr(d: Double): Double = d * d
 

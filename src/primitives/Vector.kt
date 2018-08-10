@@ -1,6 +1,6 @@
 class Vector constructor (val myCoo: DoubleArray) {
     constructor(len: Int): this(DoubleArray(len))
-    constructor(vec: Vector): this(DoubleArray(vec.myCoo.size, {p: Int -> vec.myCoo[p]}))
+    constructor(vec: Vector): this(DoubleArray(vec.myCoo.size) { p: Int -> vec.myCoo[p]})
 
     fun reflectWRT(y: Vector): Vector = add(y, mul(this, -2 * prod(this, y) / len2(this)))
 
@@ -10,7 +10,7 @@ class Vector constructor (val myCoo: DoubleArray) {
         throw IllegalArgumentException()
     }
 
-    override fun hashCode(): Int = myCoo.fold(0, {result: Int, p: Double -> result * 31 + Math.round(p / EPS).toInt()})
+    override fun hashCode(): Int = myCoo.fold(0) { result: Int, p: Double -> result * 31 + Math.round(p / EPS).toInt()}
 
     override fun toString(): String {
         val result = StringBuilder("{")

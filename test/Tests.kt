@@ -36,6 +36,30 @@ class Tests {
         println(m.mul(mi))
     }
 
+    @Test
+    fun testSymplecticWeights() {
+        val brs = BasedRootSystem(RootSystems.clbase(4).myCoo)
+        val weightDiagram = WeightDiagram(brs, 3)
+        /*val highestWeight = weightDiagram.highestWeight()
+        var maximalRoot : Vector? = null
+        var ht : Int = -1
+        for (root in brs.myPositiveRoots)
+            if (brs.rootHeight(root) > ht) {
+                ht = brs.rootHeight(root)
+                maximalRoot = root
+            } */
+        val weylGroup = WeylGroup(brs.myBasis, 1000, -1)
+        for (w in weightDiagram.myWeightsOrdered) {
+            System.out.println(w)
+            val weightSet = HashSet<Vector>()
+            for (wg in weylGroup.carrier) {
+                weightSet.add(wg.mul(w))
+            }
+            for (ws in weightSet) System.out.print(ws.toString()+"; ")
+            System.out.println()
+        }
+    }
+
 
     private fun lemma56(base: Matrix, highestWeight: Int) {
         val brs = BasedRootSystem(base.myCoo)

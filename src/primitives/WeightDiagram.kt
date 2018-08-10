@@ -45,8 +45,8 @@ class WeightDiagram(val brs: BasedRootSystem, i: Int) {
 
         if (a == b) return ComparisonResult.Equal
         val d = Vector.minus(b, a)
-        val isLess = brs.simpleRootCoefficients(d).map { it >= 0 }.fold(true, {f1, f2 -> f1 && f2}) // a_i <= b_i
-        val isGreater = brs.simpleRootCoefficients(d).map { it <= 0 }.fold(true, {f1, f2 -> f1 && f2}) // b_i <= a_i
+        val isLess = brs.simpleRootCoefficients(d).map { it >= 0 }.fold(true) { f1, f2 -> f1 && f2} // a_i <= b_i
+        val isGreater = brs.simpleRootCoefficients(d).map { it <= 0 }.fold(true) { f1, f2 -> f1 && f2} // b_i <= a_i
 
         if (isLess) return ComparisonResult.Less // b > a
         if (isGreater) return ComparisonResult.Greater // a > b
@@ -122,8 +122,7 @@ class WeightDiagram(val brs: BasedRootSystem, i: Int) {
             return brs.rootHeight(Vector.minus(lambda, mu))
         }
         val nu = sup(lambda, mu)
-        val result = h(lambda, nu, depth-1) + h(nu, mu, depth-1)
-        return result
+        return h(lambda, nu, depth-1) + h(nu, mu, depth-1)
     }
 
     private fun phantomProcedure(weight: Vector, root: Vector, fundamentals: List<Vector>, roots: Set<Vector>): Vector {
@@ -173,7 +172,7 @@ class WeightDiagram(val brs: BasedRootSystem, i: Int) {
     }
 
     fun x(alpha: Vector, xi: Double): Matrix {
-        val result = Array(myWeights.size, {i -> DoubleArray(myWeights.size, {j -> if (i==j) 1.0 else 0.0 })})
+        val result = Array(myWeights.size) { i -> DoubleArray(myWeights.size) { j -> if (i==j) 1.0 else 0.0 } }
         for (w in myWeights) {
             val wa = Vector.add(w, alpha)
             val wi = myWeightsNumbers[w]!!
