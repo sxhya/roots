@@ -37,7 +37,7 @@ class BasedRootSystem internal constructor(basis: Array<DoubleArray>) {
         }
         myCorootsBasis = Matrix(coo)
         val n = myCorootsBasis.height()
-        val fw = Array(n) { _ -> Array(n, { _ -> 0.0})}
+        val fw = Array(n) { _ -> Array(n) { _ -> 0.0} }
         for (v in 0 until coo.size) {
             val rhs = Array(n) { i -> if (i == v) 1.0 else 0.0}
             fw[v] = myCorootsBasis.solve(Vector(rhs.toDoubleArray())).myCoo.toTypedArray()

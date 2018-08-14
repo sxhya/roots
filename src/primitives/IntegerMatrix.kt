@@ -2,9 +2,9 @@ import java.util.*
 
 class IntegerMatrix(val myCoo: Array<LongArray>) {
 
-    constructor(m: IntegerMatrix): this(Array(m.myCoo.size, {i: Int -> LongArray(m.myCoo[i].size, {j: Int -> m.myCoo[i][j]})}))
+    constructor(m: IntegerMatrix): this(Array(m.myCoo.size) { i: Int -> LongArray(m.myCoo[i].size) { j: Int -> m.myCoo[i][j]} })
 
-    constructor(n: Int): this(Array(n, {i: Int -> LongArray(n, {j: Int -> if (i==j) 1 else 0})}))
+    constructor(n: Int): this(Array(n) { i: Int -> LongArray(n) { j: Int -> if (i==j) 1 else 0} })
 
     constructor(n: Int, i: Int, j: Int, xi: Long): this(n) {
         if (i == j || i < 0 || j < 0 || i >= n || j >= n) throw IllegalArgumentException()

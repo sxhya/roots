@@ -37,27 +37,65 @@ class Tests {
     }
 
     @Test
-    fun testSymplecticWeights() {
+    fun weightLatticeNF() { /* can determine if weights of a representation span the whole weight lattice */
+        val brs = BasedRootSystem(RootSystems.e6base.myCoo)
+        val weightDiagram = WeightDiagram(brs, 1)
+        val list = ArrayList<LongArray>()
+        for (w in weightDiagram.myWeightsOrdered)
+            list.add(brs.fundamentalWeightCoefficents(w).map { it.toLong() }.toLongArray())
+        val integerMatrix = IntegerMatrix(list.toTypedArray())
+        val smithForm = IntegerMatrix.SNFComputer(integerMatrix)
+        smithForm.doComputeSNF()
+        System.out.println(smithForm.s.toString())
+    }
+
+    @Test
+    fun drawHyperCube() {
+        val i = 3
         val brs = BasedRootSystem(RootSystems.clbase(4).myCoo)
-        val weightDiagram = WeightDiagram(brs, 3)
-        /*val highestWeight = weightDiagram.highestWeight()
-        var maximalRoot : Vector? = null
-        var ht : Int = -1
-        for (root in brs.myPositiveRoots)
-            if (brs.rootHeight(root) > ht) {
-                ht = brs.rootHeight(root)
-                maximalRoot = root
-            } */
-        val weylGroup = WeylGroup(brs.myBasis, 1000, -1)
-        for (w in weightDiagram.myWeightsOrdered) {
-            System.out.println(w)
-            val weightSet = HashSet<Vector>()
-            for (wg in weylGroup.carrier) {
-                weightSet.add(wg.mul(w))
-            }
-            for (ws in weightSet) System.out.print(ws.toString()+"; ")
+        val weightDiagram = WeightDiagram(brs, i)
+        val m = HashMap<Vector, Set<Vector>>()
+        for (w in weightDiagram.myWeights) {
+            val Nelems = HashSet<Vector>()
+            for (r in brs.myRootSet) if (Vector.prod(r, w) >= 0) Nelems.add(r)
+            m[w] = Nelems
+        }
+
+        val fw = brs.myFundamentalWeights.myCoo[i]
+        val refl = brs.simpleReflections[i]
+        val set = HashSet<Vector>()
+        set.add(Vector(fw))
+        set.add(Vector(refl.mul(Vector(fw))))
+
+        val weylGroup = WeylGroup(brs.myBasis, 4000, -1)
+        val sset = HashSet<Set<Vector>>()
+        for (wg in weylGroup.carrier)
+            sset.add(set.map { wg.mul(it) }.toHashSet())
+
+        for (orb in sset) {
+            for (w in orb) System.out.print(w.toString()+" ")
             System.out.println()
         }
+        System.out.println(sset.size)
+
+        System.out.print("graph.addEdges(")
+        sset.toList().mapIndexed{ index, it ->
+            val itarr = it.toTypedArray()
+            System.out.print("['w"+weightDiagram.myWeightsNumbers[itarr[0]]+"', 'w"+weightDiagram.myWeightsNumbers[itarr[1]]+"']")
+            if (index < sset.size -1) System.out.print(", ")}
+        System.out.println(")")
+
+        System.out.println(Arrays.toString(fw))
+        System.out.println(Arrays.toString(refl.mul(Vector(fw)).myCoo))
+        weightDiagram.printSpringy()
+
+
+        for (w in weightDiagram.myWeights)
+            for (w2 in weightDiagram.myWeights)
+                if (brs.myPositiveRoots.minus(m[w]!!.intersect(m[w2]!!)).size == 1)
+                System.out.println(w.toString()+" "+Arrays.toString(brs.fundamentalWeightCoefficents(w)) +"; "+
+                        w2+" "+Arrays.toString(brs.fundamentalWeightCoefficents(w2)))
+
     }
 
 
