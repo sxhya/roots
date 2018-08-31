@@ -1,3 +1,4 @@
+import Tests.Relator.Companion.determineRootPosition
 import Vector.Companion.EPS
 import org.junit.Test
 
@@ -47,6 +48,73 @@ class Tests {
         val smithForm = IntegerMatrix.SNFComputer(integerMatrix)
         smithForm.doComputeSNF()
         System.out.println(smithForm.s.toString())
+    }
+
+    class Relator(val brs: BasedRootSystem, val a: Vector, val b: Vector, val epsA : Int, val epsB : Int) {
+        override fun equals(other: Any?): Boolean {
+            if (other is Relator) {
+                if (other.a == a && other.b == b && other.epsA == epsA && other.epsB == epsB) return true
+                if (other.a == b && other.b == a && other.epsA == epsB && other.epsB == epsA) return true
+            }
+            return false
+        }
+
+        override fun hashCode(): Int {
+            val aCode = a.hashCode() * 31 + epsA.hashCode()
+            val bCode = b.hashCode() * 31 + epsB.hashCode()
+            return aCode xor bCode
+        }
+
+        override fun toString(): String {
+            val result = Arrays.toString(brs.simpleRootCoefficients(a)) + "=" + this.epsA + " / " +
+                    Arrays.toString(brs.simpleRootCoefficients(b)) + "=" + this.epsB
+            val position = when (determineRootPosition(brs, a, b)) {
+                0 -> "2a + b is a root"
+                1 -> "a + 2b is a root"
+                2 -> "a + b is a root"
+                else -> "a + b is not a root"
+            }
+            return "$result $position"
+        }
+
+        companion object {
+            fun determineRootPosition(brs: BasedRootSystem, alpha: Vector, beta: Vector): Int {
+                val sum = Vector.add(alpha, beta)
+                return if (brs.myRootSet.contains(sum)) when {
+                    brs.myRootSet.contains(Vector.add(sum, alpha)) -> 0
+                    brs.myRootSet.contains(Vector.add(sum, beta))  -> 1
+                    else -> 2} else -1
+            }
+        }
+
+    }
+
+
+
+    @Test
+    fun commutingWeights() {
+        val brs = BasedRootSystem(RootSystems.clbase(4).myCoo)
+        val relators = HashSet<Relator>()
+        for (alpha in brs.myRootSet)
+            for (beta in brs.myRootSet)
+                if (alpha != Vector.minus(beta) && alpha != beta) {
+                    for (epsilonAlpha in 0..1)
+                        for (epsilonBeta in 0..1) {
+                            //determine root string
+                            val position = determineRootPosition(brs, alpha, beta)
+                            val epsSum = epsilonAlpha + epsilonBeta
+                            val epsilonCondition = when (position) {
+                                0 -> epsilonAlpha + epsSum <= 1
+                                1 -> epsilonBeta + epsSum <= 1
+                                2 -> epsSum <= 1
+                                else -> true
+
+                            }
+                            if (epsilonCondition) relators.add(Relator(brs, alpha, beta, epsilonAlpha, epsilonBeta))
+                        }
+                }
+
+        for (relator in relators) System.out.println(relator.toString())
     }
 
     @Test
