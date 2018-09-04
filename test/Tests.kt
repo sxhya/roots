@@ -114,7 +114,40 @@ class Tests {
                         }
                 }
 
-        for (relator in relators) System.out.println(relator.toString())
+        //for (relator in relators) System.out.println(relator.toString())
+        val i = 3
+        val fw = brs.myCoweights.myCoo[i]
+        val refl = brs.simpleReflections[i]
+        val set = HashSet<Vector>()
+        set.add(Vector(fw))
+        set.add(Vector(refl.mul(Vector(fw))))
+
+        val weylGroup = WeylGroup(brs.myBasis, 4000, -1)
+        val sset = HashSet<Set<Vector>>()
+        for (wg in weylGroup.carrier)
+            sset.add(set.map { wg.mul(it) }.toHashSet())
+
+        for (relator in relators) {
+            System.out.print("Testing...")
+            var found = false
+            for (commutingPair in sset) { // pair of coweights
+                val cPair = commutingPair.toTypedArray()
+                assert (cPair.size == 2)
+                val cP0 = cPair[0]
+                val cP1 = cPair[1]
+                val a = Vector.prod(cP0, relator.a) + Vector.prod(cP1, relator.a) + relator.epsA
+                val b = Vector.prod(cP0, relator.b) + Vector.prod(cP1, relator.b) + relator.epsB
+                if (a <= 0 && b <= 0) {
+                    System.out.println("ok; ${Vector.prod(cP0, relator.a)}; ${Vector.prod(cP1, relator.a)}; eps=${relator.epsA} / ${Vector.prod(cP0, relator.b)}; ${Vector.prod(cP1, relator.b)}; eps=${relator.epsB}")
+                    found = true
+                    break;
+                }
+            }
+            if (!found){
+                System.out.println("failed")
+                break;
+            }
+        }
     }
 
     @Test

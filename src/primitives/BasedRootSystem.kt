@@ -3,15 +3,18 @@ import java.util.Collections.singletonList
 import java.util.HashSet
 
 class BasedRootSystem internal constructor(basis: Array<DoubleArray>) {
-    val myBasis: Matrix = Matrix(basis)
+    val myBasis: Matrix = Matrix(basis) // basis of Q(Ф)
     val myBasisT: Matrix = myBasis.transpose()
     val myFundamentalRoots: List<Vector> = myBasis.myCoo.map { Vector(it) }
     val myMinusFundamentalRoots = myFundamentalRoots.map { Vector.minus(it) }
     val myRootLengths: Array<Double> = myFundamentalRoots.map { Vector.len(it) }.toSet().toTypedArray()
 
-    val myCorootsBasis: Matrix
-    val myFundamentalWeights: Matrix
+    val myCorootsBasis: Matrix // basis of Q(Ф^\vee)
+    val myFundamentalWeights: Matrix // basis of P(Ф)
     val myFundamentalWeightsT: Matrix
+    val myCoweights: Matrix // basis of P(Ф^\vee)
+    val myCoweightsT: Matrix
+
     val myRootSet: Set<Vector> = Utils.rootSystemByBasis(myBasis)
     val myPositiveRoots: MutableSet<Vector> = HashSet()
     val myNegativeRoots: MutableSet<Vector> = HashSet()
@@ -38,12 +41,16 @@ class BasedRootSystem internal constructor(basis: Array<DoubleArray>) {
         myCorootsBasis = Matrix(coo)
         val n = myCorootsBasis.height()
         val fw = Array(n) { _ -> Array(n) { _ -> 0.0} }
+        val coFw = Array(n) { _ -> Array(n) { _ -> 0.0} }
         for (v in 0 until coo.size) {
             val rhs = Array(n) { i -> if (i == v) 1.0 else 0.0}
             fw[v] = myCorootsBasis.solve(Vector(rhs.toDoubleArray())).myCoo.toTypedArray()
+            coFw[v] = myBasis.solve(Vector(rhs.toDoubleArray())).myCoo.toTypedArray()
         }
         myFundamentalWeights = Matrix(fw.map { it.toDoubleArray() }.toTypedArray())
         myFundamentalWeightsT = myFundamentalWeights.transpose()
+        myCoweights = Matrix(coFw.map {it.toDoubleArray()}.toTypedArray())
+        myCoweightsT = myCoweights.transpose()
 
         if (myRootLengths.size > 2) throw IllegalStateException()
         myRootLengths.sort()

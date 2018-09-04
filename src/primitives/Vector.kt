@@ -70,7 +70,7 @@ class Vector constructor (val myCoo: DoubleArray) {
 
         fun minus(a: Vector, b: Vector) = add(a, minus(b))
 
-        fun len2(a: Vector): Double = a.myCoo.fold(0.0, {result: Double, b: Double -> result + b*b})
+        fun len2(a: Vector): Double = prod(a, a)
 
         fun len(a: Vector): Double = Math.sqrt(len2(a))
 
