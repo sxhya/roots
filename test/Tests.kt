@@ -4,7 +4,7 @@ import org.junit.Test
 
 import java.util.Arrays
 import java.util.HashMap
-
+import kotlin.math.roundToInt
 
 
 /**
@@ -89,8 +89,6 @@ class Tests {
 
     }
 
-
-
     @Test
     fun commutingWeights() {
         val brs = BasedRootSystem(RootSystems.clbase(4).myCoo)
@@ -122,10 +120,12 @@ class Tests {
         set.add(Vector(fw))
         set.add(Vector(refl.mul(Vector(fw))))
 
-        val weylGroup = WeylGroup(brs.myBasis, 4000, -1)
+        val weylGroup = WeylGroup(brs.myBasis, 10000, -1) /* Weyl group isn't really necessary -- we can perform computation similar to that in WeightDiagram */
         val sset = HashSet<Set<Vector>>()
         for (wg in weylGroup.carrier)
             sset.add(set.map { wg.mul(it) }.toHashSet())
+
+        System.out.println("There is ${sset.size} pairs of weights")
 
         for (relator in relators) {
             System.out.print("Testing...")
@@ -137,15 +137,21 @@ class Tests {
                 val cP1 = cPair[1]
                 val a = Vector.prod(cP0, relator.a) + Vector.prod(cP1, relator.a) + relator.epsA
                 val b = Vector.prod(cP0, relator.b) + Vector.prod(cP1, relator.b) + relator.epsB
-                if (a <= 0 && b <= 0) {
-                    System.out.println("ok; ${Vector.prod(cP0, relator.a)}; ${Vector.prod(cP1, relator.a)}; eps=${relator.epsA} / ${Vector.prod(cP0, relator.b)}; ${Vector.prod(cP1, relator.b)}; eps=${relator.epsB}")
+                val aI = a.roundToInt()
+                val bI = b.roundToInt()
+                val lossOfPrecision = (Math.abs(aI - a) >= Vector.EPS) || (Math.abs(bI - b) >= Vector.EPS)
+                if (lossOfPrecision)
+                    System.err.println("Loss of precision...")
+                if (aI <= 0 && bI <= 0 && !lossOfPrecision) {
+                    System.out.println("ok; ${relator} ${relator.epsA} -> $aI; ${relator.epsB} -> $bI;")
                     found = true
-                    break;
+                    break
                 }
             }
             if (!found){
                 System.out.println("failed")
-                break;
+                System.out.println("a:${Arrays.toString(brs.simpleRootCoefficients(relator.a))}, epsA:${relator.epsA} b:${Arrays.toString(brs.simpleRootCoefficients(relator.b))} epsB:${relator.epsB}; relation type: $relator")
+                break
             }
         }
     }
