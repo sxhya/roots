@@ -91,13 +91,13 @@ class Tests {
 
     @Test
     fun commutingWeights() {
-        val brs = BasedRootSystem(RootSystems.clbase(4).myCoo)
+        val brs = BasedRootSystem(RootSystems.e6base.myCoo)
         val relators = HashSet<Relator>()
         for (alpha in brs.myRootSet)
             for (beta in brs.myRootSet)
                 if (alpha != Vector.minus(beta) && alpha != beta) {
                     for (epsilonAlpha in 0..1)
-                        for (epsilonBeta in 0..1) {
+                        for (epsilonBeta in 0..1) if (epsilonAlpha > 0 || epsilonBeta > 0) {
                             //determine root string
                             val position = determineRootPosition(brs, alpha, beta)
                             val epsSum = epsilonAlpha + epsilonBeta
@@ -113,17 +113,19 @@ class Tests {
                 }
 
         //for (relator in relators) System.out.println(relator.toString())
-        val i = 3
+        val i = 5
         val fw = brs.myCoweights.myCoo[i]
         val refl = brs.simpleReflections[i]
         val set = HashSet<Vector>()
         set.add(Vector(fw))
         set.add(Vector(refl.mul(Vector(fw))))
 
-        val weylGroup = WeylGroup(brs.myBasis, 10000, -1) /* Weyl group isn't really necessary -- we can perform computation similar to that in WeightDiagram */
+        /* val weylGroup = WeylGroup(brs.myBasis, 10000, -1)
         val sset = HashSet<Set<Vector>>()
         for (wg in weylGroup.carrier)
-            sset.add(set.map { wg.mul(it) }.toHashSet())
+            sset.add(set.map { wg.mul(it) }.toHashSet()) */
+
+        val sset = brs.weightMultiOrbit(set)
 
         System.out.println("There is ${sset.size} pairs of weights")
 
@@ -149,8 +151,8 @@ class Tests {
                 }
             }
             if (!found){
-                System.out.println("failed")
-                System.out.println("a:${Arrays.toString(brs.simpleRootCoefficients(relator.a))}, epsA:${relator.epsA} b:${Arrays.toString(brs.simpleRootCoefficients(relator.b))} epsB:${relator.epsB}; relation type: $relator")
+                System.err.println("failed")
+                System.err.println("a:${Arrays.toString(brs.simpleRootCoefficients(relator.a))}, epsA:${relator.epsA} b:${Arrays.toString(brs.simpleRootCoefficients(relator.b))} epsB:${relator.epsB}; relation type: $relator")
                 break
             }
         }

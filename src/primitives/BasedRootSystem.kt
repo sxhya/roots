@@ -112,6 +112,23 @@ class BasedRootSystem internal constructor(basis: Array<DoubleArray>) {
         return result
     }
 
+    fun weightMultiOrbit(weightSet: Set<Vector>): Set<Set<Vector>> {
+        val result = HashSet<Set<Vector>>()
+        var len: Int
+        val s = simpleReflections
+        result.add(weightSet)
+        do {
+            len = result.size
+            val newElements = HashSet<Set<Vector>>()
+            for (elem in result) for (i in 0 until myBasis.height()) {
+                newElements.add(elem.map { s[i].mul(it) }.toHashSet())
+            }
+            result.addAll(newElements)
+        } while (result.size > len)
+
+        return result
+    }
+
     fun rootString(root: Vector): List<Int> {
         if (!myPositiveRoots.contains(root)) throw IllegalArgumentException()
 
