@@ -59,6 +59,27 @@ class Utils {
             return result
         }
 
+        fun subtractClosure(set: Set<Vector>, brs: BasedRootSystem): HashSet<Vector> {
+            val result = HashSet(set)
+            var counter = 0
+            do {
+                val extraRoots = HashSet<Vector>()
+                for (v1 in result) for (v2 in result) {
+                    val element = Vector.minus(v1, v2)
+                    if (brs.myRootSet.contains(element))
+                        if (!result.contains(element))
+                            extraRoots.add(element)
+                }
+                val srs = brs.myFundamentalRoots.filter { result.contains(it) }.size
+                val srm = brs.myFundamentalRoots.filter { result.contains(Vector.minus(it)) }.size
+                System.out.println("Iteration: $counter Roots: ${result.size} SimpleRoots: $srs MinusSimpleRoots: $srm")
+                result.addAll(extraRoots)
+                counter++
+            } while (extraRoots.isNotEmpty())
+            System.out.println("Counter: $counter")
+            return result
+        }
+
     }
 
     }

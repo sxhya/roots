@@ -2,7 +2,7 @@ class Matrix {
     val myCoo: Array<DoubleArray>
 
     constructor(coo: Array<DoubleArray>) {
-        myCoo = Array(coo.size, {i -> DoubleArray(coo[i].size)})
+        myCoo = Array(coo.size) { i -> DoubleArray(coo[i].size)}
         for (i in myCoo.indices) {
             System.arraycopy(coo[i], 0, myCoo[i], 0, myCoo[i].size)
         }
@@ -27,7 +27,7 @@ class Matrix {
         return w
     }
 
-    fun column(i: Int): Vector = Vector(DoubleArray(height(), {j -> myCoo[j][i]}))
+    fun column(i: Int): Vector = Vector(DoubleArray(height()) { j -> myCoo[j][i]})
 
     fun mul(v: Vector): Vector {
         val w = width()
@@ -152,8 +152,7 @@ class Matrix {
     fun add(m1: Matrix, coo: Double = 1.0): Matrix {
         assert (m1.width() == width())
         assert (m1.height() == height())
-        val coo = Array(height(), {i -> DoubleArray(width(), {j -> coo*m1.myCoo[i][j] + myCoo[i][j]})})
-        return Matrix(coo)
+        return Matrix(Array(height()) { i -> DoubleArray(width()) { j -> coo*m1.myCoo[i][j] + myCoo[i][j]} })
     }
 
     companion object {

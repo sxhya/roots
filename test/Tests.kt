@@ -15,10 +15,10 @@ class Tests {
     @Test
     fun testSNFComputer() {
         val k = arrayOf(longArrayOf(4, 0, 0, 0, 0),
-                        longArrayOf(0, 0, 0, 0, 0),
-                        longArrayOf(0, 0, 0, 0, 0),
-                        longArrayOf(0, 0, 0, 0, 0),
-                        longArrayOf(0, 0, 0, 0, 0))
+                longArrayOf(0, 0, 0, 0, 0),
+                longArrayOf(0, 0, 0, 0, 0),
+                longArrayOf(0, 0, 0, 0, 0),
+                longArrayOf(0, 0, 0, 0, 0))
 
         val im = IntegerMatrix(k)
         val computer = IntegerMatrix.SNFComputer(im)
@@ -50,7 +50,7 @@ class Tests {
         System.out.println(smithForm.s.toString())
     }
 
-    class Relator(val brs: BasedRootSystem, val a: Vector, val b: Vector, val epsA : Int, val epsB : Int) {
+    class Relator(val brs: BasedRootSystem, val a: Vector, val b: Vector, val epsA: Int, val epsB: Int) {
         override fun equals(other: Any?): Boolean {
             if (other is Relator) {
                 if (other.a == a && other.b == b && other.epsA == epsA && other.epsB == epsB) return true
@@ -82,8 +82,9 @@ class Tests {
                 val sum = Vector.add(alpha, beta)
                 return if (brs.myRootSet.contains(sum)) when {
                     brs.myRootSet.contains(Vector.add(sum, alpha)) -> 0
-                    brs.myRootSet.contains(Vector.add(sum, beta))  -> 1
-                    else -> 2} else -1
+                    brs.myRootSet.contains(Vector.add(sum, beta)) -> 1
+                    else -> 2
+                } else -1
             }
         }
 
@@ -134,14 +135,14 @@ class Tests {
             var found = false
             for (commutingPair in sset) { // pair of coweights
                 val cPair = commutingPair.toTypedArray()
-                assert (cPair.size == 2)
+                assert(cPair.size == 2)
                 val cP0 = cPair[0]
                 val cP1 = cPair[1]
                 val a = Vector.prod(cP0, relator.a) + Vector.prod(cP1, relator.a) + relator.epsA
                 val b = Vector.prod(cP0, relator.b) + Vector.prod(cP1, relator.b) + relator.epsB
                 val aI = a.roundToInt()
                 val bI = b.roundToInt()
-                val lossOfPrecision = (Math.abs(aI - a) >= Vector.EPS) || (Math.abs(bI - b) >= Vector.EPS)
+                val lossOfPrecision = (Math.abs(aI - a) >= EPS) || (Math.abs(bI - b) >= EPS)
                 if (lossOfPrecision)
                     System.err.println("Loss of precision...")
                 if (aI <= 0 && bI <= 0 && !lossOfPrecision) {
@@ -150,7 +151,7 @@ class Tests {
                     break
                 }
             }
-            if (!found){
+            if (!found) {
                 System.err.println("failed")
                 System.err.println("a:${Arrays.toString(brs.simpleRootCoefficients(relator.a))}, epsA:${relator.epsA} b:${Arrays.toString(brs.simpleRootCoefficients(relator.b))} epsB:${relator.epsB}; relation type: $relator")
                 break
@@ -165,9 +166,9 @@ class Tests {
         val weightDiagram = WeightDiagram(brs, i)
         val m = HashMap<Vector, Set<Vector>>()
         for (w in weightDiagram.myWeights) {
-            val Nelems = HashSet<Vector>()
-            for (r in brs.myRootSet) if (Vector.prod(r, w) >= 0) Nelems.add(r)
-            m[w] = Nelems
+            val nElems = HashSet<Vector>()
+            for (r in brs.myRootSet) if (Vector.prod(r, w) >= 0) nElems.add(r)
+            m[w] = nElems
         }
 
         val fw = brs.myFundamentalWeights.myCoo[i]
@@ -182,16 +183,17 @@ class Tests {
             sset.add(set.map { wg.mul(it) }.toHashSet())
 
         for (orb in sset) {
-            for (w in orb) System.out.print(w.toString()+" ")
+            for (w in orb) System.out.print("$w ")
             System.out.println()
         }
         System.out.println(sset.size)
 
         System.out.print("graph.addEdges(")
-        sset.toList().mapIndexed{ index, it ->
+        sset.toList().mapIndexed { index, it ->
             val itarr = it.toTypedArray()
-            System.out.print("['w"+weightDiagram.myWeightsNumbers[itarr[0]]+"', 'w"+weightDiagram.myWeightsNumbers[itarr[1]]+"']")
-            if (index < sset.size -1) System.out.print(", ")}
+            System.out.print("['w" + weightDiagram.myWeightsNumbers[itarr[0]] + "', 'w" + weightDiagram.myWeightsNumbers[itarr[1]] + "']")
+            if (index < sset.size - 1) System.out.print(", ")
+        }
         System.out.println(")")
 
         System.out.println(Arrays.toString(fw))
@@ -202,8 +204,8 @@ class Tests {
         for (w in weightDiagram.myWeights)
             for (w2 in weightDiagram.myWeights)
                 if (brs.myPositiveRoots.minus(m[w]!!.intersect(m[w2]!!)).size == 1)
-                System.out.println(w.toString()+" "+Arrays.toString(brs.fundamentalWeightCoefficents(w)) +"; "+
-                        w2+" "+Arrays.toString(brs.fundamentalWeightCoefficents(w2)))
+                    System.out.println(w.toString() + " " + Arrays.toString(brs.fundamentalWeightCoefficents(w)) + "; " +
+                            w2 + " " + Arrays.toString(brs.fundamentalWeightCoefficents(w2)))
 
     }
 
@@ -211,19 +213,19 @@ class Tests {
     private fun lemma56(base: Matrix, highestWeight: Int) {
         val brs = BasedRootSystem(base.myCoo)
         val wd = WeightDiagram(brs, highestWeight)
-        System.out.println("Number of vertices: "+wd.myWeights.size)
+        System.out.println("Number of vertices: " + wd.myWeights.size)
         for (alpha in brs.myRootSet)
             for (lambda in wd.myWeights) // nonzero && lambda + alpha -- also nonzero
                 if (wd.myWeights.contains(Vector.add(alpha, lambda)))
-                    assert (wd.c(lambda, alpha) == wd.c(Vector.add(lambda, alpha), Vector.minus(alpha)))
+                    assert(wd.c(lambda, alpha) == wd.c(Vector.add(lambda, alpha), Vector.minus(alpha)))
         for (alpha in brs.myFundamentalRoots)
             for (beta in brs.myFundamentalRoots)
                 for (lambda in wd.myWeights) //TODO: can be zero...
                     if (wd.myWeights.contains(Vector.add(alpha, lambda)) &&
                             wd.myWeights.contains(Vector.add(beta, lambda)) &&
                             wd.myWeights.contains(Vector.add(Vector.add(alpha, beta), lambda)))
-                        assert (wd.c(lambda, alpha) * wd.c(Vector.add(lambda, alpha), beta) ==
-                        wd.c(lambda, beta) * wd.c(Vector.add(lambda, beta), alpha))
+                        assert(wd.c(lambda, alpha) * wd.c(Vector.add(lambda, alpha), beta) ==
+                                wd.c(lambda, beta) * wd.c(Vector.add(lambda, beta), alpha))
     }
 
     fun testN(base: Matrix, highestWeight: Int) {
@@ -260,21 +262,85 @@ class Tests {
                     for (gamma in brs.myRootSet)
                         if (brs.myRootSet.contains(Vector.add(beta, gamma)) &&
                                 brs.myRootSet.contains(Vector.add(alpha, Vector.add(beta, gamma))))
-                        assert (Math.abs(N[Pair(beta, gamma)]!! * N[Pair(alpha, Vector.add(beta, gamma))]!! -
-                                N[Pair(Vector.add(alpha, beta), gamma)]!! * N[Pair(alpha, beta)]!!) < EPS) // testSNFComputer formula (6) page 9 -- only for simply-laced root systems
+                            assert(Math.abs(N[Pair(beta, gamma)]!! * N[Pair(alpha, Vector.add(beta, gamma))]!! -
+                                    N[Pair(Vector.add(alpha, beta), gamma)]!! * N[Pair(alpha, beta)]!!) < EPS) // testSNFComputer formula (6) page 9 -- only for simply-laced root systems
 
 
+                    val gamma = Vector.minus(Vector.add(alpha, beta))
+                    // testSNFComputer formula (1) page 8
+                    assert(N[Pair(alpha, beta)]!! == N[Pair(Vector.minus(beta), Vector.minus(alpha))]!!)
+                    assert(N[Pair(alpha, beta)]!! == -N[Pair(Vector.minus(alpha), Vector.minus(beta))]!!)
+                    assert(N[Pair(alpha, beta)]!! == -N[Pair(beta, alpha)]!!)
 
-                val gamma = Vector.minus(Vector.add(alpha, beta))
-                // testSNFComputer formula (1) page 8
-                assert (N[Pair(alpha, beta)]!! == N[Pair(Vector.minus(beta), Vector.minus(alpha))]!!)
-                assert (N[Pair(alpha, beta)]!! == - N[Pair(Vector.minus(alpha), Vector.minus(beta))]!!)
-                assert (N[Pair(alpha, beta)]!! == - N[Pair(beta, alpha)]!!)
+                    // testSNFComputer formula (2) page 8
+                    assert(Math.abs(N[Pair(alpha, beta)]!!.toDouble() / Vector.len2(gamma) - N[Pair(beta, gamma)]!!.toDouble() / Vector.len2(alpha)) < EPS)
+                    assert(Math.abs(N[Pair(alpha, beta)]!!.toDouble() / Vector.len2(gamma) - N[Pair(gamma, alpha)]!!.toDouble() / Vector.len2(beta)) < EPS)
+                }
+    }
 
-                // testSNFComputer formula (2) page 8
-                assert (Math.abs(N[Pair(alpha, beta)]!!.toDouble() / Vector.len2(gamma) - N[Pair(beta, gamma)]!!.toDouble() / Vector.len2(alpha)) < EPS)
-                assert (Math.abs(N[Pair(alpha, beta)]!!.toDouble() / Vector.len2(gamma) - N[Pair(gamma, alpha)]!!.toDouble() / Vector.len2(beta)) < EPS)
+    fun isClosed(rs: BasedRootSystem, roots: Set<Vector>): Boolean {
+        val list = ArrayList<Vector>(roots)
+        var result = true
+        for (i in 0 until list.size)
+            for (j in i + 1 until list.size) {
+                val v = Vector.add(list[i], list[j])
+                if (rs.myRootSet.contains(v) && !roots.contains(v)) {
+                    val cooi = Arrays.toString(rs.simpleRootCoefficients(list[i]))
+                    val cooj = Arrays.toString(rs.simpleRootCoefficients(list[j]))
+                    val coov = Arrays.toString(rs.simpleRootCoefficients(v))
+                    System.out.println("$cooi $cooj $coov")
+                    result = false
+                }
             }
+        return result
+    }
+
+    @Test
+    fun testDl() {
+        val d5 = BasedRootSystem(RootSystems.dlbase(5).myCoo)
+        val root1 = d5.myFundamentalRoots[0]
+        val dependentRoots = HashSet<Vector>()
+        dependentRoots.add(Vector.minus(root1))
+        dependentRoots.add(root1)
+        for (r in d5.myRootSet) {
+            val v = Vector.add(r, root1)
+            if (d5.myRootSet.contains(v)) dependentRoots.add(v)
+        }
+
+        val otherRoots = d5.myRootSet.minus(dependentRoots).asSequence().toSet()
+
+        System.out.println(isClosed(d5, otherRoots))
+    }
+
+    private fun singleDifferenceExperiment(name: String, brs: BasedRootSystem) {
+        for (i in 0 until brs.myFundamentalRoots.size) {
+            val ui = HashSet<Vector>()
+            for (root in brs.myRootSet) if (brs.simpleRootCoefficients(root)[i] > 0) ui.add(root)
+            val experimentResult = Utils.subtractClosure(ui, brs).size == brs.myRootSet.size
+            System.out.println("RootSystem: $name i=$i, result=$experimentResult")
+            System.out.println()
+        }
+    }
+
+    @Test
+    fun differenceExperiment(){
+        singleDifferenceExperiment("A2", BasedRootSystem(RootSystems.albase(2).myCoo))
+        singleDifferenceExperiment("A3", BasedRootSystem(RootSystems.albase(3).myCoo))
+        singleDifferenceExperiment("A4", BasedRootSystem(RootSystems.albase(4).myCoo))
+        singleDifferenceExperiment("A5", BasedRootSystem(RootSystems.albase(5).myCoo))
+        singleDifferenceExperiment("A6", BasedRootSystem(RootSystems.albase(6).myCoo))
+        singleDifferenceExperiment("A7", BasedRootSystem(RootSystems.albase(7).myCoo))
+        singleDifferenceExperiment("D4", BasedRootSystem(RootSystems.dlbase(4).myCoo))
+        singleDifferenceExperiment("D5", BasedRootSystem(RootSystems.dlbase(5).myCoo))
+        singleDifferenceExperiment("B4", BasedRootSystem(RootSystems.blbase(4).myCoo))
+        singleDifferenceExperiment("B5", BasedRootSystem(RootSystems.blbase(5).myCoo))
+        singleDifferenceExperiment("C4", BasedRootSystem(RootSystems.clbase(4).myCoo))
+        singleDifferenceExperiment("C5", BasedRootSystem(RootSystems.clbase(5).myCoo))
+        singleDifferenceExperiment("E6", BasedRootSystem(RootSystems.e6base.myCoo))
+        singleDifferenceExperiment("E7", BasedRootSystem(RootSystems.e7base.myCoo))
+        singleDifferenceExperiment("E8", BasedRootSystem(RootSystems.e8base.myCoo))
+        singleDifferenceExperiment("F4", BasedRootSystem(RootSystems.f4base.myCoo))
+
     }
 
     @Test
