@@ -361,4 +361,38 @@ class Tests {
         testN(RootSystems.e7base, 6)
     }
 
+    @Test
+    fun testCurtisTits(){
+        val rs = BasedRootSystem(RootSystems.f4base.myCoo)
+        fun calculateSpan(a: Vector, b : Vector): MutableSet<Vector> {
+            val set = HashSet<Vector>()
+            set.add(a); set.add(b)
+            Utils.reflectClosure(set)
+            return set
+        }
+
+        val occupiedRoots = HashSet<Vector>()
+
+        for (a in rs.myFundamentalRoots)
+            for (b in rs.myFundamentalRoots)
+                occupiedRoots.addAll(calculateSpan(a, b))
+
+        val difference = rs.myRootSet.minus(occupiedRoots)
+        val sizes = HashSet<Pair<Int, Set<Boolean>>>()
+
+        for (d in difference) for (c in difference) {
+            val s = calculateSpan(c, d).size
+            val l = HashSet<Boolean>()
+            if (s == 6 || s == 4) {
+                l.add(rs.isLong(c))
+                l.add(rs.isLong(d))
+            }
+            sizes.add(Pair(s, l))
+        }
+        for (s in sizes) print("$s, ")
+
+        println()
+        println("CT-presentation roots: ${occupiedRoots.size} out out of ${rs.myRootSet.size}")
+    }
+
 }
