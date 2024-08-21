@@ -1,8 +1,12 @@
+import A3Subsystems.Companion.calculateSpan
 import Tests.Relator.Companion.determineRootPosition
 import Vector.Companion.EPS
+import Vector.Companion.add
+import Vector.Companion.minus
 import org.junit.Test
 
 import java.util.Arrays
+import java.util.Collections.singletonList
 import java.util.HashMap
 import kotlin.math.roundToInt
 
@@ -28,13 +32,106 @@ class Tests {
 
     @Test
     fun testInverse() {
-        val m = Matrix.random(4, 5.0, false)
-        val mi = m.inverse()
-        println(m)
-        println()
-        println(mi)
-        println()
-        println(m.mul(mi))
+        val brs = BasedRootSystem(RootSystems.e7base.myCoo)
+        val i = 6
+        println(brs.myRootSet.size)
+        val sigmaPlus = HashSet<Vector>()
+        val sigmaMinus = HashSet<Vector>()
+        val delta = HashSet<Vector>()
+
+        val highestWeight = Vector(brs.myFundamentalWeights.myCoo[6])
+        val weightOrbit = brs.weightOrbit(highestWeight).toList()
+        println(weightOrbit.size)
+        for ((index, weight1) in weightOrbit.withIndex()) {
+            //if (index > 1) for (weight2 in weightOrbit.subList(0, index - 1)) {
+                var coo0 = 0
+                var coo1 = 0
+                var coom1 = 0
+                var coo2 = 0
+                var coom2 = 0
+            for (root in brs.myRootSet) {
+                val prod = Vector.prod(weight1, root)
+                if (Math.abs(prod - 0) < EPS) coo0++
+                if (Math.abs(prod - 1) < EPS) coo1++
+                if (Math.abs(prod - 2) < EPS) coo2++
+                if (Math.abs(prod + 1) < EPS) coom1++
+                if (Math.abs(prod + 2) < EPS) coom2++
+            }
+                println("$coom2 $coom1 $coo0 $coo1 $coo2")
+        }
+
+        /* for (root in brs.myRootSet) {
+            val v = brs.simpleRootCoefficients(root)
+            val product = Vector.prod(highestWeight, root)
+            println(product)
+            when {
+                v[i] == 0 ->
+                    delta.add(root)
+                v[i] == 1 ->
+                    sigmaPlus.add(root)
+                v[i] == -1 ->
+                    sigmaMinus.add(root)
+            }
+        }
+
+        println(sigmaPlus.size)
+        println(delta.size)
+
+        for (sigma in sigmaPlus) {
+            var summable = 0
+            for (tau in sigmaMinus) {
+                if (brs.myRootSet.contains(Vector.add(sigma, tau))) summable++
+            }
+            println(summable)
+        } */
+    }
+
+    @Test
+    fun testA4() {
+        val brs = BasedRootSystem(RootSystems.albase(4).myCoo)
+        val rv = brs.myFundamentalRoots[0]
+        val fw = Vector(brs.myFundamentalWeights.myCoo[0])
+        println(fw)
+    }
+
+    @Test
+    fun testHypothesis() {
+        val brs = BasedRootSystem(RootSystems.e7base.myCoo)
+        val i = 6
+        val rv = brs.myFundamentalRoots[i]
+        val fw = Vector(brs.myFundamentalWeights.myCoo[i])
+        val Uk = LinkedHashSet<Vector>()
+
+        for (r in brs.myRootSet) {
+            val sc = Vector.prod(r, fw)
+            if (Math.abs(sc - 1) < EPS) Uk.add(r)
+        }
+
+        for (r2 in brs.myRootSet) {
+            for (r3 in Uk) {
+                val span = calculateSpan(rv, r2, r3)
+                if (span.size == 12) {
+                    var sigma = 0
+                    for (v in span) if (Math.abs(Vector.prod(v, fw) - 1) < EPS) sigma++
+                    print(" $sigma")
+                    /* if (sigma == 4) {
+                        var canFindAlternativeSubsystem = false
+                        for (r4 in brs.myRootSet) {
+                            val newSpan = calculateSpan(r2, r3, r4)
+                            if (newSpan.size == 12) {
+                                sigma = 0
+                                for (v in newSpan) if (Math.abs(Vector.prod(v, fw) - 1) < EPS) sigma++
+                                if (sigma == 3) {
+                                    canFindAlternativeSubsystem = true
+                                    break
+                                }
+                            }
+                        }
+                        println("Span: ${Vector.prod(r2, r3)} canFindAlternativeSubsystem: $canFindAlternativeSubsystem")
+                    } */
+                }
+            }
+        }
     }
 
     @Test
@@ -393,6 +490,69 @@ class Tests {
 
         println()
         println("CT-presentation roots: ${occupiedRoots.size} out out of ${rs.myRootSet.size}")
+    }
+
+    fun ht(root: Vector, brs: BasedRootSystem) = brs.simpleRootCoefficients(root).fold(0, {acc, v -> acc + v})
+
+    fun rootString(brs: BasedRootSystem, root: Vector): List<Int> {
+        val result = ArrayList<Int>()
+        val coo = brs.simpleRootCoefficients(root)
+        val ht = coo.fold(0, {acc, v -> acc + v})
+
+        if (ht <= 0) return rootString(brs, Vector.minus(root))
+        if (ht == 1) return singletonList(coo.indexOfFirst { it != 0 } + 1)
+        for ((index, fr) in brs.myFundamentalRoots.withIndex()) {
+            if (coo[index] == 0) continue
+            val diff = minus(root, fr)
+            if (brs.myRootSet.contains(diff)) {
+                result.add(index + 1)
+                result.addAll(rootString(brs, diff))
+                break
+            }
+        }
+        return result
+    }
+
+    fun nasty(brs: BasedRootSystem, wd: WeightDiagram, weight: Vector, root: Vector): Int {
+        val rs = rootString(brs, root)
+        var w = weight
+        var n = 0
+        for (i in rs) {
+            val ww = Vector.add(w, brs.myFundamentalRoots[i-1])
+            if (wd.myWeights.contains(ww)) {
+                w = ww
+            } else n++
+        }
+        return n
+    }
+
+    @Test
+    fun testRootString() {
+        val brs = BasedRootSystem(RootSystems.e6base.myCoo)
+        /* for (root in brs.myPositiveRoots) {
+            val coo = brs.simpleRootCoefficients(root)
+            val ht = Math.abs(coo.fold(0, {acc, v -> acc + v}))
+            println(Arrays.toString(coo) + " $ht " + rootString(brs, root))
+        } */
+
+        val wd = WeightDiagram(brs, 0)
+        val fund = Vector(brs.myFundamentalWeights.myCoo[0])
+        //val max = brs.myPositiveRoots.find { ht(it, brs) == 11 }!!
+        for (w in wd.myWeights) {
+            if (w == fund) println("FUND") else {
+                val root1 = brs.myNegativeRoots.firstOrNull { Vector.len(minus(add(fund, it), w)) < EPS }
+                if (root1 != null) println(root1) else {
+                    loop1@for (root1 in brs.myNegativeRoots)
+                        for (root2 in brs.myNegativeRoots)
+                        if (Vector.len(minus(add(add(fund, root1), root2), w)) < EPS ) {
+                            println("$root1 + $root2")
+                            break@loop1
+                        }
+                }
+            }
+
+        }
+        println(wd.myWeights.size)
     }
 
 }

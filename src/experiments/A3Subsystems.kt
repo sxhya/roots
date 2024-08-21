@@ -11,15 +11,6 @@ class A3Subsystems {
         return Math.abs(angle - 0.5) < Vector.EPS || Math.abs(angle + 0.5) < Vector.EPS
     }
 
-    private fun calculateSpan(a: Vector, b: Vector, c: Vector): Set<Vector> {
-        val result = HashSet<Vector>()
-        result.add(a)
-        result.add(b)
-        result.add(c)
-        Utils.reflectClosure(result)
-        return result
-    }
-
     private fun testA3(a: Vector, b: Vector, rs: Set<Vector>): Int {
         val results = ArrayList<Set<Vector>>()
         if (testA2(a, b)) return -1
@@ -239,5 +230,15 @@ class A3Subsystems {
         println()
     }
 
+    companion object {
+        fun calculateSpan(a: Vector, b: Vector, c: Vector): Set<Vector> {
+            val result = HashSet<Vector>()
+            result.add(a)
+            result.add(b)
+            result.add(c)
+            Utils.reflectClosure(result)
+            return result
+        }
+    }
 
 }
