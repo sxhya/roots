@@ -526,33 +526,103 @@ class Tests {
         return n
     }
 
+    fun c(alpha: Vector, lambda: Vector, brs: BasedRootSystem, wd: WeightDiagram): Int {
+        val n = if (brs.myPositiveRoots.contains(alpha)) {
+            nasty(brs, wd, lambda, alpha)
+        } else {
+            nasty(brs, wd, add(lambda, alpha), minus(alpha))
+        }
+
+        return if (n % 2 == 0) 1 else -1
+    }
+
     @Test
     fun testRootString() {
-        val brs = BasedRootSystem(RootSystems.e6base.myCoo)
+        val brs = BasedRootSystem(RootSystems.e7base.myCoo)
+        val maxHeight = brs.myPositiveRoots.map { ht(it, brs) }.maxOrNull() ?: 0
+        val max = brs.myPositiveRoots.find { ht(it, brs) == maxHeight }!!
+
         /* for (root in brs.myPositiveRoots) {
             val coo = brs.simpleRootCoefficients(root)
             val ht = Math.abs(coo.fold(0, {acc, v -> acc + v}))
             println(Arrays.toString(coo) + " $ht " + rootString(brs, root))
         } */
 
-        val wd = WeightDiagram(brs, 0)
-        val fund = Vector(brs.myFundamentalWeights.myCoo[0])
-        //val max = brs.myPositiveRoots.find { ht(it, brs) == 11 }!!
+        val wd = WeightDiagram(brs, 6)
+        val fund = Vector(brs.myFundamentalWeights.myCoo[6])
+
+        /*
+        //Test Third Look Proposition 1(1)
+        for (w in wd.myWeights) if (wd.myWeights.contains(add(w, max)))
+            println(c(max, w, brs, wd))
+
+        println("======")
+        //Test Third Look Proposition 1(2)
+        for (root in brs.myRootSet) {
+            var i : Int = 1
+
+            for (w in wd.myWeights) if (wd.myWeights.contains(add(w, root))) {
+                i = i * c(root, w, brs, wd)
+            }
+            val ht = ht(root, brs) % 2
+            val c2 = if (ht == 0) -1 else 1
+            println("c: $i; ht: $c2 ${i == c2};")
+        } */
+
+        val sigma_1_minus = HashSet<Vector>()
+        for (root in brs.myRootSet) {
+            val coo = brs.simpleRootCoefficients(root)
+            if (coo[6] == -1) sigma_1_minus.add(root)
+        }
+        println("sigma: ${sigma_1_minus.size}")
+
         for (w in wd.myWeights) {
             if (w == fund) println("FUND") else {
-                val root1 = brs.myNegativeRoots.firstOrNull { Vector.len(minus(add(fund, it), w)) < EPS }
-                if (root1 != null) println(root1) else {
-                    loop1@for (root1 in brs.myNegativeRoots)
-                        for (root2 in brs.myNegativeRoots)
+                val root1 = sigma_1_minus.firstOrNull { Vector.len(minus(add(fund, it), w)) < EPS }
+                if (root1 != null) {
+                    println(" ${c(root1, fund, brs, wd) == c(minus(root1), add(fund, root1), brs, wd)}")
+                } else {
+                    var exists = false
+                    loop1@for (root1 in sigma_1_minus) for (root2 in sigma_1_minus)
                         if (Vector.len(minus(add(add(fund, root1), root2), w)) < EPS ) {
-                            println("$root1 + $root2")
-                            break@loop1
+                            val lambda_1 = add(fund, root1)
+
+                            val c1 = c(root1, fund, brs, wd)
+                            val c1m = c(minus(root1), lambda_1, brs, wd)
+
+                            val c2 = c(root2, lambda_1, brs, wd)
+                            val c2m = c(minus(root2), w, brs, wd)
+
+                            println("${c1 * c2 == c1m * c2m}")
+                            exists = true
+
                         }
+                    if (!exists) {
+                        loop1@for (root1 in sigma_1_minus) for (root2 in sigma_1_minus) for (root3 in sigma_1_minus)
+                            if (Vector.len(minus(add(add(add(fund, root1), root2), root3), w)) < EPS ) {
+                                val lambda_1 = add(fund, root1)
+                                val lambda_2 = add(add(fund, root1), root2)
+
+                                if (wd.myWeights.contains(lambda_1) && wd.myWeights.contains(lambda_2)) {
+                                    val c1 = c(root1, fund, brs, wd)
+                                    val c1m = c(minus(root1), lambda_1, brs, wd)
+
+                                    val c2 = c(root2, lambda_1, brs, wd)
+                                    val c2m = c(minus(root2), lambda_2, brs, wd)
+
+                                    val c3 = c(root3, lambda_2, brs, wd)
+                                    val c3m = c(minus(root3), w, brs, wd)
+
+                                    println("${c1 * c2 * c3 == c1m * c2m * c3m}")
+                                    exists = true
+                                } else println("something went wrong")
+                            }
+                    }
                 }
             }
-
+            println("=======")
         }
-        println(wd.myWeights.size)
+
     }
 
 }
